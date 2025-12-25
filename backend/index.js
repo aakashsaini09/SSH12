@@ -1,9 +1,9 @@
+import "./src/config/env.js";
 import dotenv from "dotenv";
 dotenv.config();
-
 import express from "express";
 import cors from "cors";
-import { userSignUp } from "./src/routes/auth.routes";
+import { userSignUp } from "./src/routes/auth.routes.js";
 
 const app = express();
 
@@ -13,6 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const port = process.env.PORT || 8001;
+// console.log("URL: ", process.env.MONGODB_URL)
 app.post('/auth/signup', userSignUp)
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
