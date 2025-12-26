@@ -1,20 +1,22 @@
-import { connectDB } from "../config/db.js";
-import jwt from "jsonwebtoken";
-export const userSignUp = async (req, res) => {
-  const { name, email, city } = req.body;
+import bcrypt from "bcrypt";
+import crypto from "crypto";
+import User from "../schema/UserSchema.js";
 
-  // 1️⃣ Validation
-  if (!name || !email || !city) {
+export const userSignUp = async (req, res) => {
+  const { name, email, password, city } = req.body;
+
+  if (!name || !email || !password || !city) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  if (password.length < 8) {
     return res.status(400).json({
-      message: "Name, email and city are required"
+      message: "Password must be at least 8 characters"
     });
   }
-  try {
-    const db = await connectDB();
-    const users = db.collection("users");
 
-    // 2️⃣ Check existing user
-    const existingUser = await users.findOne({ email });
+  try {
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(409).json({
@@ -22,68 +24,24 @@ export const userSignUp = async (req, res) => {
       });
     }
 
-    // 3️⃣ Insert user
-    await users.insertOne({
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
+    await User.create({
       name,
       email,
+      password: hashedPassword,
       city,
-      createdAt: new Date()
+      isVerified: false,
+      verificationToken,
+      verificationTokenExpires: Date.now() + 1000 * 60 * 60
     });
+
+    console.log("VERIFY TOKEN:", verificationToken);
 
     return res.status(201).json({
-      message: "User signed up successfully"
-    });
-
-  } catch (err) {
-    console.error(err);
-
-    return res.status(500).json({
-      message: "Internal server error"
-    });
-  }
-};
-
-
-export const userSignIn = async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({
-      message: "Email is required"
-    });
-  }
-
-  try {
-    const db = await connectDB();
-    const users = db.collection("users");
-
-    const user = await users.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found"
-      });
-    }
-
-    if (!user.isVerified) {
-      return res.status(403).json({
-        message: "Please verify your email before logging in"
-      });
-    }
-
-    // Issue JWT
-    const token = jwt.sign(
-      {
-        userId: user._id.toString(),
-        email: user.email
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    return res.status(200).json({
-      message: "Login successful",
-      token
+      message: "Signup successful. Please verify your email."
     });
 
   } catch (err) {
