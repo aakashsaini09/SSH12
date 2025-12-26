@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import User from '../schema/UserSchema.js'
+import { sendVerificationEmail } from "../services/email.services.js";
 
 export const resendVerificationEmail = async (req, res) => {
   const { email } = req.body;
@@ -37,7 +38,11 @@ export const resendVerificationEmail = async (req, res) => {
 
     // 4️⃣ Send email (stub for now)
     console.log("RESEND VERIFY TOKEN:", newToken);
-
+    // ✅ SEND EMAIL HERE
+    await sendVerificationEmail({
+      to: email,
+      token: verificationToken
+    });
     return res.status(200).json({
       message: "Verification email resent successfully"
     });

@@ -1,6 +1,7 @@
 import User from "../schema/UserSchema.js";
 
 export const verifyEmail = async (req, res) => {
+     console.log("VERIFY EMAIL HIT", req.query);
   const { token } = req.query;
 
   if (!token) {
