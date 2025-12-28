@@ -19,7 +19,7 @@ const port = process.env.PORT || 8001;
 // console.log("URL: ", process.env.MONGODB_URL)
 await connectDB();
 app.use("/auth", authRoutes);
-app.get("/verify-email", verifyEmail)
+app.get("/auth/verify-email", verifyEmail)
 app.use('/events', eventRoutes)
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
