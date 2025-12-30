@@ -7,6 +7,7 @@ import authRoutes from "./src/routes/auth.routes.js";
 import { connectDB } from "./src/config/db.js";
 import { verifyEmail } from "./src/controllers/verifyEmail.js";
 import eventRoutes from './src/routes/event.routes.js'
+import joinRoutes from "./src/routes/join.routes.js";
 
 const app = express();
 
@@ -21,6 +22,7 @@ await connectDB();
 app.use("/auth", authRoutes);
 app.get("/auth/verify-email", verifyEmail)
 app.use('/events', eventRoutes)
+app.use("/join", joinRoutes);
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
