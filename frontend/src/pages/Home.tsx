@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Film, Users, MapPin, Calendar, Star, ArrowRight, Menu, X, Sparkles, Popcorn, Ticket } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Film, Users, MapPin, Calendar, Star, ArrowRight, Menu, X, Sparkles, Popcorn, Ticket, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function MovieMeetupLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -59,14 +60,14 @@ export default function MovieMeetupLanding() {
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div 
-          className="absolute w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] transition-all duration-1000"
+          className="absolute w-125 h-125 bg-purple-600/20 rounded-full blur-[120px] transition-all duration-1000"
           style={{
             left: `${mousePosition.x - 250}px`,
             top: `${mousePosition.y - 250}px`,
           }}
         />
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-pink-600/10 rounded-full blur-[150px] animate-pulse-slow" />
-        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-blue-600/10 rounded-full blur-[150px] animate-pulse-slower" />
+        <div className="absolute top-0 left-1/4 w-150 h-150 bg-pink-600/10 rounded-full blur-[150px] animate-pulse-slow" />
+        <div className="absolute bottom-0 right-1/4 w-175 h-175 bg-blue-600/10 rounded-full blur-[150px] animate-pulse-slower" />
       </div>
 
       {/* Navigation - Full Width */}
@@ -100,10 +101,10 @@ export default function MovieMeetupLanding() {
 
             <div className="hidden lg:flex items-center space-x-4">
               <button className="px-6 py-2.5 text-white hover:text-pink-400 transition-colors font-medium">
-                Sign In
+                <Link to={'/login'}>Sign In</Link>
               </button>
               <button className="relative px-6 py-2.5 bg-linear-to-r from-pink-500 via-purple-500 to-blue-500 rounded-full font-semibold overflow-hidden group">
-                <span className="relative z-10">Get Started</span>
+                <Link to={'/signup'} className="relative z-10">Get Started</Link>
                 <div className="absolute inset-0 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
             </div>
@@ -171,7 +172,9 @@ export default function MovieMeetupLanding() {
             <div className="flex items-center space-x-8 pt-4">
               <div className="flex -space-x-3">
                 {[1,2,3,4].map(i => (
-                  <div key={i} className="w-10 h-10 rounded-full bg-linear-to-br from-pink-500 to-purple-600 border-2 border-black" />
+                  <div key={i} className="w-10 h-10 rounded-full bg-linear-to-br from-pink-500 to-purple-600 border-2 border-black flex justify-center items-center">
+                    <User size={30}/>
+                  </div>
                 ))}
               </div>
               <div className="text-sm">
@@ -182,7 +185,7 @@ export default function MovieMeetupLanding() {
           </div>
 
           {/* Floating Cards */}
-          <div className="relative h-[600px] hidden lg:block">
+          <div className="relative h-150 hidden lg:block">
             <div className="absolute top-0 right-0 w-80 p-6 bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl animate-float">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
