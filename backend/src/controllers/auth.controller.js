@@ -73,20 +73,31 @@ export const userLogin = async (req, res) => {
         })
     }
     try {
+      // check email exist
         const user = await User.findOne({ email});
         if(!user){
             return res.status(401).json({
             message: "Invalid Email or password"
           })
         }
+        // check password
+        const isPasswordMatch = await bcrypt.compare(
+          password, user.password
+        )
+        if(!isPasswordMatch){
+          return res.status(401).json({
+            message: "Invalid email or password"
+          })
+        }
+        // email verification check
         if(!user.isVerified){
             return res.status(403).json({
                 message: "Email not verified",
                 action: "RESEND_VERIFICATION"
             });
         }
-        // 4️⃣ Issue JWT
-    const token = jwt.sign(
+        // Issue JWT
+      const token = jwt.sign(
       {
         userId: user._id.toString(),
         email: user.email

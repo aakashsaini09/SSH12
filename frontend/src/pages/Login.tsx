@@ -2,15 +2,16 @@ import axios from "axios";
 import { Film, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-
+// aakashsaini948585@gmail.com
 export default function Login() {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
-    const navigate = useNavigate()
-    const [userData, setuserData] = useState({
-        email: "",
-        password: "",
-      })
-    const loginFunction = async() => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const navigate = useNavigate()
+  const [userData, setuserData] = useState({
+    email: "",
+    password: "",
+  })
+  const loginFunction = async(e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
     if(userData.email.length <= 5){
       return alert("Enter a valid email")
     }
@@ -19,14 +20,33 @@ export default function Login() {
     }
     try {
       const res = await axios.post(`${backendUrl}/auth/login`, userData)
+      const { token } = res.data;
+      localStorage.setItem('token', token);
         alert(res.data.message)
+        console.log(res)
         navigate('/mainpage');
     } catch (error) {
-      console.log("Error: ", error)
-      if(axios.isAxiosError(error) && error.response?.data?.message){
-        alert(error.response.data.message)
+  if (axios.isAxiosError(error) && error.response?.data) {
+    const { message, action } = error.response.data;
+
+    alert(message);
+
+    if (action === "RESEND_VERIFICATION") {
+      const confirmResend = window.confirm(
+        "Do you want us to resend the verification email?"
+      );
+
+      if (confirmResend) {
+        await axios.post(`${backendUrl}/auth/resend-verification`, {
+          email: userData.email
+        });
+        alert("Verification email resent. Check your inbox.");
       }
     }
+  } else {
+    console.log("Unexpected error:", error);
+  }
+}
   }
       const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
@@ -52,7 +72,7 @@ export default function Login() {
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form action="#" method="POST" className="space-y-6">
+          <form onSubmit={loginFunction} className="space-y-6">
              <div>
               <label htmlFor="email" className="block text-sm/6 font-medium text-gray-100">
                 Email address
@@ -101,7 +121,6 @@ export default function Login() {
             <div>
               <button
                 type="submit"
-                onClick={loginFunction}
                 className="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
               >
                 Sign in

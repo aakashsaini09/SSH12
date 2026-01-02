@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 export default function SignUp() {
-  const backendUrl = import.meta.env.BASE_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate()
   const cities = ["Delhi", "Mumbai", "Bengaluru", "Chennai", "Kolkata", "Hyderabad"];
   const [userData, setuserData] = useState({
@@ -12,8 +12,8 @@ export default function SignUp() {
     password: "",
     city: ""
   })
-  const SignupFunction = async() => {
-    // e.preventDefault()
+  const SignupFunction = async(e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
     if(userData.name.length <= 3){
       return alert("Enter a valid name")
     }
@@ -58,7 +58,7 @@ export default function SignUp() {
         </div>
 
         <div className="mt-4 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form action="#" method="POST" className="space-y-6">
+          <form onSubmit={SignupFunction} className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm/6 font-medium text-gray-100">
                 Full Name
@@ -150,7 +150,6 @@ export default function SignUp() {
             <div>
               <button
                 type="submit"
-                onClick={SignupFunction}
                 className="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-black hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
                 Sign up
               </button>
