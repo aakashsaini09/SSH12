@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 export default function SignUp() {
+  const backendUrl = import.meta.env.BASE_URL;
   const navigate = useNavigate()
   const cities = ["Delhi", "Mumbai", "Bengaluru", "Chennai", "Kolkata", "Hyderabad"];
   const [userData, setuserData] = useState({
@@ -23,7 +24,7 @@ export default function SignUp() {
       return alert("password must be 8 character long")
     }
     try {
-      const res = await axios.post('http://localhost:8000/auth/signup', userData)
+      const res = await axios.post(`${backendUrl}/auth/signup`, userData)
         alert(res.data.message)
         navigate('/login');
     } catch (error) {

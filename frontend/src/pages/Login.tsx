@@ -1,6 +1,40 @@
+import axios from "axios";
 import { Film, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function Login() {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const navigate = useNavigate()
+    const [userData, setuserData] = useState({
+        email: "",
+        password: "",
+      })
+    const loginFunction = async() => {
+    if(userData.email.length <= 5){
+      return alert("Enter a valid email")
+    }
+    if(userData.password.length <= 7){
+      return alert("Password must be 8 character long")
+    }
+    try {
+      const res = await axios.post(`${backendUrl}/auth/login`, userData)
+        alert(res.data.message)
+        navigate('/mainpage');
+    } catch (error) {
+      console.log("Error: ", error)
+      if(axios.isAxiosError(error) && error.response?.data?.message){
+        alert(error.response.data.message)
+      }
+    }
+  }
+      const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = e.target;
+        setuserData((prevData) => ({
+            ...prevData,
+            [name]: value
+      }))
+      }
   return (
     <>
       <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8 bg-black h-screen">
@@ -19,7 +53,7 @@ export default function Login() {
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
           <form action="#" method="POST" className="space-y-6">
-            <div>
+             <div>
               <label htmlFor="email" className="block text-sm/6 font-medium text-gray-100">
                 Email address
               </label>
@@ -28,17 +62,19 @@ export default function Login() {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="Enter Email"
+                  placeholder="Enter your email"
+                  value={userData.email}
+                  onInput={handleChange}
                   required
-                  autoComplete="email"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                  autoComplete="off"
+                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-gray-500 placeholder:text-gray-600 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm/6 font-medium text-gray-100">
+                <label htmlFor="password" className="block text-sm/6 font-medium text-gray-700">
                   Password
                 </label>
                 <div className="text-sm">
@@ -51,11 +87,13 @@ export default function Login() {
                 <input
                   id="password"
                   name="password"
+                  placeholder="Enter your password"
                   type="password"
+                  value={userData.password}
+                  onChange={handleChange}
                   required
-                  placeholder="Enter password"
-                  autoComplete="current-password"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                  autoComplete="off"
+                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-gray-500 placeholder:text-gray-600 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 />
               </div>
             </div>
@@ -63,6 +101,7 @@ export default function Login() {
             <div>
               <button
                 type="submit"
+                onClick={loginFunction}
                 className="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
               >
                 Sign in
