@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Film, Users, MapPin, Calendar, Clock, Plus, Search, Filter, ChevronDown, Ticket } from 'lucide-react';
-
+import { Link, useNavigate } from 'react-router-dom';
+import img from '../dune.jpg'
 interface Event {
   _id: string;
   movieTitle: string;
@@ -19,8 +20,10 @@ interface Event {
 }
 
 export default function MainPage() {
+  const navigate = useNavigate()
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [searchQuery, setSearchQuery] = useState('');
+  const [popupState, setpopupState] = useState(false)
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [selectedCity] = useState('Mumbai');
   const [events, setEvents] = useState<Event[]>([]);
@@ -28,6 +31,9 @@ export default function MainPage() {
 
   const getAllEvents = async () => {
     const token = localStorage.getItem('token');
+    if(!token){
+      navigate('/');
+    }
     try {
       setLoading(true);
       const res = await fetch(`${backendUrl}/events`, {
@@ -63,7 +69,17 @@ export default function MainPage() {
   useEffect(() => {
     getAllEvents();
   }, []);
-
+  const changePopupfunction =() => {
+    if(popupState == true){
+      setpopupState(false)
+    }else{
+      setpopupState(true)
+    }
+  }
+  function logOut() {
+     localStorage.removeItem("token");
+     navigate('/');
+  }
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'OPEN': return 'bg-green-500/20 text-green-400 border-green-500/30';
@@ -110,12 +126,15 @@ export default function MainPage() {
                 <ChevronDown className="w-4 h-4" />
               </button>
               
-              <button className="flex items-center space-x-2 px-6 py-2.5 bg-linear-to-r from-purple-500 via-purple-500 to-gray-500 rounded-full font-semibold hover:opacity-90 transition-opacity">
+              <button className="flex items-center cursor-pointer space-x-2 px-6 py-2.5 bg-linear-to-r from-purple-500 via-purple-500 to-gray-500 rounded-full font-semibold hover:opacity-90 transition-opacity">
                 <Plus className="w-5 h-5" />
-                <span>Create Event</span>
+                <span >Create Event</span>
               </button>
-              <button className="flex items-center border border-white w-16 h-16 mx-3 cursor-pointer rounded-full font-semibold hover:opacity-90 transition-opacity">
-                
+              <button onClick={changePopupfunction} className="flex items-center border border-white w-16 h-16 mx-3 cursor-pointer rounded-full font-semibold hover:opacity-90 transition-opacity">
+                {popupState ? (<div className='fixed bg-gray-800 top-22 right-10 flex flex-col text-xl rounded-2xl'>
+                  <Link to={'/profile'} className='py-2 px-4 flex items-center justify-center border-b border-gray-400 w-full'>Profile</Link>
+                  <div className='py-2 px-4 flex items-center justify-center w-full' onClick={logOut}>LogOut</div>
+                </div>) : (<></>)}
               </button>
             </div>
           </div>
@@ -200,8 +219,9 @@ export default function MainPage() {
                   className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden hover:border-purple-500/50 transition-all duration-300 hover:transform hover:scale-[1.02]"
                 >
                   {/* Movie Image Placeholder */}
-                  <div className="relative h-64 bg-linear-to-br from-purple-600/30 via-purple-600/30 to-gray-600/30 flex items-center justify-center overflow-hidden">
-                    <Film className="w-20 h-20 text-white/30" />
+                  <div className="relative h-64 bg-black flex items-center justify-center overflow-hidden">
+                    {/* <Film className="w-20 h-20 text-white/30" /> */}
+                    <img src={img}/>
                     <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
                     
                     {/* Status Badge */}
@@ -256,7 +276,7 @@ export default function MainPage() {
                       {event.status === 'OPEN' && (
                         <button className="px-4 py-2 bg-linear-to-r from-purple-500 to-purple-600 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity flex items-center space-x-1">
                           <Ticket className="w-4 h-4" />
-                          <span>Join</span>
+                          <span className='cursor-pointer'>Join</span>
                         </button>
                       )}
                       

@@ -286,7 +286,7 @@ export default function MovieMeetupLanding() {
               <div key={index} className="relative group">
                 <div className="absolute -inset-0.5 bg-linear-to-r from-pink-500 via-purple-500 to-blue-500 rounded-3xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
                 <div className="relative bg-black border border-white/10 rounded-3xl p-8 h-full">
-                  <div className="text-6xl font-black text-transparent bg-clip-text bg-linear-to-br from-pink-400 to-purple-600 mb-4">
+                  <div className="text-6xl font-black bg-clip-text bg-linear-to-br text-white mb-4">
                     {item.step}
                   </div>
                   <div className="w-14 h-14 bg-linear-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center mb-6">
