@@ -23,7 +23,7 @@ export const userSignUp = async (req, res) => {
     if (existingUser) {
         if (!existingUser.isVerified) {
             return res.status(409).json({
-            message: "Email not verified",
+            message: "Email already exist (Resended verification email).",
             action: "RESEND_VERIFICATION"
             });
         }

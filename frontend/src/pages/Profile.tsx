@@ -1,16 +1,24 @@
 import { useState, useEffect } from 'react';
 import { Film, Users, MapPin, Calendar, Clock, ChevronDown, ChevronUp, X, Check, UserPlus, Trash2, Edit } from 'lucide-react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 interface JoinRequest {
   _id: string;
-  userId: {
+  eventId: {
+    _id: string;
+    movieTitle: string;
+    showTime: string;
+  };
+  fromUser: {
     _id: string;
     name: string;
     city: string;
   };
-  requestedAt: string;
+  toUser: string;
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface MyEvent {
@@ -39,6 +47,7 @@ export default function ProfilePage() {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'requests' | 'members'>('requests');
   const [myEvents, setMyEvents] = useState<MyEvent[]>([]);
+  const [allRequests, setAllRequests] = useState<JoinRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Hardcoded user data - Replace with actual user data from auth context
@@ -47,14 +56,6 @@ export default function ProfilePage() {
     name: 'Aakash',
     city: 'Mumbai',
     email: 'aakash@example.com'
-  };
-  // Hardcoded values until API is ready
-  const totalRequests = 3; // TODO: Replace with actual API call
-  const totalMembers = 8; // TODO: Replace with actual API call
-
-  // Mock data for join requests per event - TODO: Replace with actual API call
-  const mockJoinRequests: { [eventId: string]: JoinRequest[] } = {
-    
   };
 
   // Mock data for accepted members per event - TODO: Replace with actual API call
@@ -65,7 +66,6 @@ export default function ProfilePage() {
   const getMyEvents = async () => {
     const token = localStorage.getItem('token');
     try {
-      setLoading(true);
       const res = await fetch(`${backendUrl}/events/mine`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -77,7 +77,7 @@ export default function ProfilePage() {
       }
 
       const data = await res.json();
-      console.log("response is: ", data);
+      console.log("My events response: ", data);
 
       // Handle different response structures
       if (Array.isArray(data)) {
@@ -88,25 +88,83 @@ export default function ProfilePage() {
         setMyEvents([data]);
       }
     } catch (error) {
-      console.error("Error: ", error);
+      console.error("Error fetching events: ", error);
       setMyEvents([]);
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const getAllRequests = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${backendUrl}/join/requests/incoming`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch requests');
+      }
+
+      const data = await res.json();
+      console.log("All requests response: ", data);
+
+      // Handle different response structures
+      if (Array.isArray(data)) {
+        setAllRequests(data);
+      } else if (data.requests && Array.isArray(data.requests)) {
+        setAllRequests(data.requests);
+      } else if (typeof data === 'object') {
+        setAllRequests([data]);
+      }
+    } catch (error) {
+      console.error("Error fetching requests: ", error);
+      setAllRequests([]);
     }
   };
 
   useEffect(() => {
-    getMyEvents();
+    const fetchData = async () => {
+      setLoading(true);
+      await Promise.all([getMyEvents(), getAllRequests()]);
+      setLoading(false);
+    };
+    fetchData();
   }, []);
 
-  const handleAcceptRequest = (eventId: string, requestId: string) => {
-    console.log(`Accepting request ${requestId} for event ${eventId}`);
-    // TODO: API call to accept request
+  const handleAcceptRequest = async (eventId: string, requestId: string) => {
+    // console.log(`Accepting request ${requestId} for event ${eventId}`);
+    const token = localStorage.getItem('token');
+    try {
+      const res = await axios.post(`${backendUrl}/join/requests/${requestId}/accept`,{}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      // console.log("All requests response: ", res.data);
+      alert(res.data.message)
+    } catch (error) {
+      console.error("Error fetching requests: ", error);
+      alert("Something went wrong")
+    }
+    await getAllRequests();
   };
-
-  const handleRejectRequest = (eventId: string, requestId: string) => {
-    console.log(`Rejecting request ${requestId} for event ${eventId}`);
-    // TODO: API call to reject request
+  const handleRejectRequest = async (eventId: string, requestId: string) => {
+    // console.log(`Rejecting request ${requestId} for event ${eventId}`);
+    const token = localStorage.getItem('token');
+    try {
+      const res = await axios.post(`${backendUrl}/join/requests/${requestId}/reject`,{}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log("All requests response: ", res.data);
+      alert(res.data.message)
+    } catch (error) {
+      console.error("Error fetching requests: ", error);
+      alert("Something went wrong")
+    }
+    await getAllRequests();
   };
 
   const handleRemoveMember = (eventId: string, memberId: string) => {
@@ -121,33 +179,8 @@ export default function ProfilePage() {
 
   const toggleEventExpand = (eventId: string) => {
     setExpandedEventId(expandedEventId === eventId ? null : eventId);
-    getEventDetails()
   };
-  const getEventDetails = async() => {
-    const token = localStorage.getItem('token');
-    try {
-      setLoading(true);
-      const res = await fetch(`${backendUrl}/join/requests/incoming`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
 
-      if (!res.ok) {
-        throw new Error('Failed to fetch events');
-      }
-
-      const data = await res.json();
-      console.log("response is: ", data);
-    } catch (error) {
-    console.error("Error: ", error);
-    if (error instanceof Error) {
-      alert(error.message);
-    }
-  } finally {
-      setLoading(false);
-  };
-  }
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -167,13 +200,22 @@ export default function ProfilePage() {
     }
   };
 
+  // Get join requests for a specific event
   const getEventJoinRequests = (eventId: string): JoinRequest[] => {
-    return mockJoinRequests[eventId] || [];
+    return allRequests.filter(request => 
+      request.eventId._id === eventId && request.status === 'PENDING'
+    );
   };
 
   const getEventMembers = (eventId: string) => {
     return mockAcceptedMembers[eventId] || [];
   };
+
+  // Calculate total pending requests across all events
+  const totalRequests = allRequests.filter(req => req.status === 'PENDING').length;
+  
+  // TODO: Calculate total members from API
+  const totalMembers = 8;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -202,7 +244,7 @@ export default function ProfilePage() {
         <div className="px-6 lg:px-12 xl:px-20 py-12">
           <div className="max-w-7xl mx-auto">
             {/* User Info Card */}
-            <div className="bg-linear-to-r from-black-900/30 to-blue-900/30 rounded-3xl p-8 mb-12 border border-white/10">
+            <div className="bg-linear-to-r from-purple-900/30 to-pink-900/30 rounded-3xl p-8 mb-12 border border-white/10">
               <div className="flex items-center space-x-6">
                 <div className="w-24 h-24 bg-linear-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-4xl font-black">
                   {user.name.charAt(0)}
@@ -323,7 +365,7 @@ export default function ProfilePage() {
                                 {expandedEventId === event._id ? (
                                   <ChevronUp className="w-5 h-5" />
                                 ) : (
-                                  <ChevronDown className="w-5 h-5"/>
+                                  <ChevronDown className="w-5 h-5" />
                                 )}
                               </button>
                             </div>
@@ -395,15 +437,15 @@ export default function ProfilePage() {
                                       >
                                         <div className="flex items-center space-x-4">
                                           <div className="w-12 h-12 bg-linear-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center font-bold">
-                                            {request.userId.name.charAt(0)}
+                                            {request.fromUser.name.charAt(0)}
                                           </div>
                                           <div>
-                                            <div className="font-semibold">{request.userId.name}</div>
+                                            <div className="font-semibold">{request.fromUser.name}</div>
                                             <div className="text-sm text-gray-400 flex items-center space-x-2">
                                               <MapPin className="w-3 h-3" />
-                                              <span>{request.userId.city}</span>
+                                              <span>{request.fromUser.city}</span>
                                               <span>•</span>
-                                              <span>{formatDate(request.requestedAt)}</span>
+                                              <span>{formatDate(request.createdAt)}</span>
                                             </div>
                                           </div>
                                         </div>
