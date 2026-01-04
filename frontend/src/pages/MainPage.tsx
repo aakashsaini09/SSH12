@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Film, Users, MapPin, Calendar, Clock, Plus, Search, Filter, ChevronDown, Ticket } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import img from '../dune.jpg'
+import type { AxiosResponse } from 'axios';
+import axios from 'axios';
 interface Event {
   _id: string;
   movieTitle: string;
@@ -65,6 +67,33 @@ export default function MainPage() {
       setLoading(false);
     }
   };
+const requestToJoinEvent = async (eId: string): Promise<void> => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    navigate('/');
+    return;
+  }
+  try {
+    setLoading(true);
+    const res: AxiosResponse = await axios.post(`${backendUrl}/join/${eId}/request`,{}, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }
+    );
+    const data = res.data;
+    console.log("response is: ", data);
+    alert(res.data.message)
+  } catch (error) {
+    console.error("Error: ", error);
+    if (axios.isAxiosError(error)) {
+      alert(error.response?.data?.message);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     getAllEvents();
@@ -100,8 +129,7 @@ export default function MainPage() {
   };
 
   const filteredEvents = events.filter(event => {
-    const matchesSearch = event.movieTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          event.theaterName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = event.movieTitle.toLowerCase().includes(searchQuery.toLowerCase()) || event.theaterName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'ALL' || event.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -274,7 +302,7 @@ export default function MainPage() {
                       </div>
 
                       {event.status === 'OPEN' && (
-                        <button className="px-4 py-2 bg-linear-to-r from-purple-500 to-purple-600 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity flex items-center space-x-1">
+                        <button onClick={() => requestToJoinEvent(event._id)} className="px-4 py-2 bg-linear-to-r from-purple-500 to-purple-600 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity flex items-center space-x-1">
                           <Ticket className="w-4 h-4" />
                           <span className='cursor-pointer'>Join</span>
                         </button>
