@@ -158,3 +158,36 @@ export const rejectRequest = async (req, res) => {
     });
   }
 };
+
+
+export const getEventMembers = async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    const event = await MovieEvent.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({
+        message: "Event not found"
+      });
+    }
+
+    // Only event owner can see members (for now)
+    if (event.createdBy.toString() !== req.user.userId) {
+      return res.status(403).json({
+        message: "Not authorized"
+      });
+    }
+
+    const members = await EventParticipant.find({ eventId })
+      .populate("userId", "name city");
+
+    return res.json(members);
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Internal server error"
+    });
+  }
+};

@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Film, Users, MapPin, Calendar, Clock, ChevronDown, ChevronUp, X, Check, UserPlus, Trash2, Edit } from 'lucide-react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
 
 interface JoinRequest {
   _id: string;
@@ -48,6 +46,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'requests' | 'members'>('requests');
   const [myEvents, setMyEvents] = useState<MyEvent[]>([]);
   const [allRequests, setAllRequests] = useState<JoinRequest[]>([]);
+  const [eventMembers, setEventMembers] = useState<{ [eventId: string]: Array<{ _id: string; userId: {name: string; city: string} }> }>({});
   const [loading, setLoading] = useState(true);
 
   // Hardcoded user data - Replace with actual user data from auth context
@@ -57,12 +56,6 @@ export default function ProfilePage() {
     city: 'Mumbai',
     email: 'aakash@example.com'
   };
-
-  // Mock data for accepted members per event - TODO: Replace with actual API call
-  const mockAcceptedMembers: { [eventId: string]: Array<{ _id: string; name: string; city: string }> } = {
-    // Add mock members for your events if needed
-  };
-
   const getMyEvents = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -82,14 +75,46 @@ export default function ProfilePage() {
       // Handle different response structures
       if (Array.isArray(data)) {
         setMyEvents(data);
+        // Fetch members for each event
+        data.forEach((event: MyEvent) => {
+          fetchEventMembers(event._id);
+        });
       } else if (data.events && Array.isArray(data.events)) {
         setMyEvents(data.events);
+        data.events.forEach((event: MyEvent) => {
+          fetchEventMembers(event._id);
+        });
       } else if (typeof data === 'object') {
         setMyEvents([data]);
+        fetchEventMembers(data._id);
       }
     } catch (error) {
       console.error("Error fetching events: ", error);
       setMyEvents([]);
+    }
+  };
+
+  const fetchEventMembers = async (eventId: string) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${backendUrl}/join/${eventId}/members`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) {
+        throw new Error('Failed to fetch members');
+      }
+      const data = await res.json();
+      console.log(`Members for event ${eventId}: `, data);
+      
+      // Store members in state by eventId
+      setEventMembers(prev => ({
+        ...prev,
+        [eventId]: Array.isArray(data) ? data : (data.members || [])
+      }));
+    } catch (error) {
+      console.error(`Error fetching members for event ${eventId}: `, error);
     }
   };
 
@@ -133,38 +158,53 @@ export default function ProfilePage() {
   }, []);
 
   const handleAcceptRequest = async (eventId: string, requestId: string) => {
-    // console.log(`Accepting request ${requestId} for event ${eventId}`);
     const token = localStorage.getItem('token');
     try {
-      const res = await axios.post(`${backendUrl}/join/requests/${requestId}/accept`,{}, {
+      const res = await fetch(`${backendUrl}/join/requests/${requestId}/accept`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      // console.log("All requests response: ", res.data);
-      alert(res.data.message)
+      
+      if (!res.ok) {
+        throw new Error('Failed to accept request');
+      }
+      
+      const data = await res.json();
+      alert(data.message || 'Request accepted successfully');
+      
+      // Refresh requests and members
+      await Promise.all([getAllRequests(), fetchEventMembers(eventId)]);
     } catch (error) {
-      console.error("Error fetching requests: ", error);
-      alert("Something went wrong")
+      console.error("Error accepting request: ", error);
+      alert("Something went wrong");
     }
-    await getAllRequests();
   };
+
   const handleRejectRequest = async (eventId: string, requestId: string) => {
-    // console.log(`Rejecting request ${requestId} for event ${eventId}`);
     const token = localStorage.getItem('token');
     try {
-      const res = await axios.post(`${backendUrl}/join/requests/${requestId}/reject`,{}, {
+      const res = await fetch(`${backendUrl}/join/requests/${requestId}/reject`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      console.log("All requests response: ", res.data);
-      alert(res.data.message)
+      
+      if (!res.ok) {
+        throw new Error('Failed to reject request');
+      }
+      
+      const data = await res.json();
+      alert(data.message || 'Request rejected successfully');
+      
+      // Refresh requests
+      await getAllRequests();
     } catch (error) {
-      console.error("Error fetching requests: ", error);
-      alert("Something went wrong")
+      console.error("Error rejecting request: ", error);
+      alert("Something went wrong");
     }
-    await getAllRequests();
   };
 
   const handleRemoveMember = (eventId: string, memberId: string) => {
@@ -207,15 +247,15 @@ export default function ProfilePage() {
     );
   };
 
-  const getEventMembers = (eventId: string) => {
-    return mockAcceptedMembers[eventId] || [];
+  const getEventMembersList = (eventId: string) => {
+    return eventMembers[eventId] || [];
   };
 
   // Calculate total pending requests across all events
   const totalRequests = allRequests.filter(req => req.status === 'PENDING').length;
   
-  // TODO: Calculate total members from API
-  const totalMembers = 8;
+  // Calculate total members from all events
+  const totalMembers = Object.values(eventMembers).reduce((acc, members) => acc + members.length, 0);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -229,9 +269,9 @@ export default function ProfilePage() {
                 CineConnect
               </span>
             </div>
-            <Link to={'/mainpage'} className="px-6 py-2 text-gray-400 hover:text-white transition-colors">
+            <button className="px-6 py-2 text-gray-400 hover:text-white transition-colors">
               Back to Events
-            </Link>
+            </button>
           </div>
         </div>
       </header>
@@ -304,7 +344,7 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   {myEvents.map((event) => {
                     const eventRequests = getEventJoinRequests(event._id);
-                    const eventMembers = getEventMembers(event._id);
+                    const eventMembersList = getEventMembersList(event._id);
 
                     return (
                       <div
@@ -381,11 +421,11 @@ export default function ProfilePage() {
                                 </span>
                               </div>
                             )}
-                            {eventMembers.length > 0 && (
+                            {eventMembersList.length > 0 && (
                               <div className="inline-flex items-center space-x-2 bg-green-500/20 text-green-400 px-4 py-2 rounded-full">
                                 <Users className="w-4 h-4" />
                                 <span className="text-sm font-semibold">
-                                  {eventMembers.length} {eventMembers.length === 1 ? 'Member' : 'Members'}
+                                  {eventMembersList.length} {eventMembersList.length === 1 ? 'Member' : 'Members'}
                                 </span>
                               </div>
                             )}
@@ -414,7 +454,7 @@ export default function ProfilePage() {
                                   activeTab === 'members' ? 'text-pink-400' : 'text-gray-400 hover:text-white'
                                 }`}
                               >
-                                Accepted Members ({eventMembers.length})
+                                Accepted Members ({eventMembersList.length})
                                 {activeTab === 'members' && (
                                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-pink-500 to-purple-500"></div>
                                 )}
@@ -469,25 +509,25 @@ export default function ProfilePage() {
                                 </div>
                               ) : (
                                 <div className="space-y-3">
-                                  {eventMembers.length === 0 ? (
+                                  {eventMembersList.length === 0 ? (
                                     <div className="text-center py-8 text-gray-400">
                                       No members yet
                                     </div>
                                   ) : (
-                                    eventMembers.map((member) => (
+                                    eventMembersList.map((member) => (
                                       <div
                                         key={member._id}
                                         className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
                                       >
                                         <div className="flex items-center space-x-4">
                                           <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center font-bold">
-                                            {member.name.charAt(0)}
+                                            {member.userId?.name.charAt(0)}
                                           </div>
                                           <div>
-                                            <div className="font-semibold">{member.name}</div>
+                                            <div className="font-semibold">{member.userId.name}</div>
                                             <div className="text-sm text-gray-400 flex items-center space-x-2">
                                               <MapPin className="w-3 h-3" />
-                                              <span>{member.city}</span>
+                                              <span>{member.userId.city}</span>
                                             </div>
                                           </div>
                                         </div>
