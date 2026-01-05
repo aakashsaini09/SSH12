@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Film, Users, MapPin, Calendar, Clock, ChevronDown, ChevronUp, X, Check, UserPlus, Trash2, Edit } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface JoinRequest {
   _id: string;
@@ -269,9 +270,9 @@ export default function ProfilePage() {
                 CineConnect
               </span>
             </div>
-            <button className="px-6 py-2 text-gray-400 hover:text-white transition-colors">
+            <Link to={'/mainpage'} className="px-6 py-2 text-gray-400 hover:text-white transition-colors">
               Back to Events
-            </button>
+            </Link>
           </div>
         </div>
       </header>
@@ -284,9 +285,9 @@ export default function ProfilePage() {
         <div className="px-6 lg:px-12 xl:px-20 py-12">
           <div className="max-w-7xl mx-auto">
             {/* User Info Card */}
-            <div className="bg-linear-to-r from-purple-900/30 to-pink-900/30 rounded-3xl p-8 mb-12 border border-white/10">
+            <div className="bg-linear-to-r from-blue-900/30 to-gray-900/30 rounded-3xl p-8 mb-12 border border-white/10">
               <div className="flex items-center space-x-6">
-                <div className="w-24 h-24 bg-linear-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-4xl font-black">
+                <div className="w-24 h-24 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-4xl font-black">
                   {user.name.charAt(0)}
                 </div>
                 <div className="flex-1">
@@ -388,19 +389,19 @@ export default function ProfilePage() {
                               {event.status !== 'EXPIRED' && (
                                 <>
                                   <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                                    <Edit className="w-5 h-5" />
+                                    <Edit className="w-5 h-5 cursor-pointer" />
                                   </button>
                                   <button
                                     onClick={() => handleDeleteEvent(event._id)}
                                     className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
                                   >
-                                    <Trash2 className="w-5 h-5" />
+                                    <Trash2 className="w-5 h-5 cursor-pointer" />
                                   </button>
                                 </>
                               )}
                               <button
                                 onClick={() => toggleEventExpand(event._id)}
-                                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                                className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
                               >
                                 {expandedEventId === event._id ? (
                                   <ChevronUp className="w-5 h-5" />
@@ -439,7 +440,7 @@ export default function ProfilePage() {
                             <div className="flex border-b border-white/10">
                               <button
                                 onClick={() => setActiveTab('requests')}
-                                className={`flex-1 px-6 py-4 font-semibold transition-colors relative ${
+                                className={`flex-1 px-6 py-4 font-semibold transition-colors relative cursor-pointer ${
                                   activeTab === 'requests' ? 'text-pink-400' : 'text-gray-400 hover:text-white'
                                 }`}
                               >
@@ -450,7 +451,7 @@ export default function ProfilePage() {
                               </button>
                               <button
                                 onClick={() => setActiveTab('members')}
-                                className={`flex-1 px-6 py-4 font-semibold transition-colors relative ${
+                                className={`flex-1 px-6 py-4 font-semibold transition-colors relative cursor-pointer ${
                                   activeTab === 'members' ? 'text-pink-400' : 'text-gray-400 hover:text-white'
                                 }`}
                               >
@@ -492,13 +493,13 @@ export default function ProfilePage() {
                                         <div className="flex items-center space-x-2">
                                           <button
                                             onClick={() => handleAcceptRequest(event._id, request._id)}
-                                            className="p-2 bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors"
+                                            className="p-2 bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors cursor-pointer"
                                           >
                                             <Check className="w-5 h-5" />
                                           </button>
                                           <button
                                             onClick={() => handleRejectRequest(event._id, request._id)}
-                                            className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors"
+                                            className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors cursor-pointer"
                                           >
                                             <X className="w-5 h-5" />
                                           </button>
@@ -534,7 +535,7 @@ export default function ProfilePage() {
                                         {event.status !== 'EXPIRED' && (
                                           <button
                                             onClick={() => handleRemoveMember(event._id, member._id)}
-                                            className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors"
+                                            className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors cursor-pointer"
                                           >
                                             <X className="w-5 h-5" />
                                           </button>

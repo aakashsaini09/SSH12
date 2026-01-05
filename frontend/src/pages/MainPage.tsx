@@ -302,9 +302,9 @@ const requestToJoinEvent = async (eId: string): Promise<void> => {
                       </div>
 
                       {event.status === 'OPEN' && (
-                        <button onClick={() => requestToJoinEvent(event._id)} className="px-4 py-2 bg-linear-to-r from-purple-500 to-purple-600 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity flex items-center space-x-1">
+                        <button onClick={() => requestToJoinEvent(event._id)} className="px-4 py-2 bg-linear-to-r from-purple-500 to-purple-600 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity flex items-center space-x-1 cursor-pointer">
                           <Ticket className="w-4 h-4" />
-                          <span className='cursor-pointer'>Join</span>
+                          <span>Join</span>
                         </button>
                       )}
                       
