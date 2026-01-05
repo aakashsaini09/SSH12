@@ -284,7 +284,6 @@ export default function ProfilePage() {
       ) : (
         <div className="px-6 lg:px-12 xl:px-20 py-12">
           <div className="max-w-7xl mx-auto">
-            {/* User Info Card */}
             <div className="bg-linear-to-r from-blue-900/30 to-gray-900/30 rounded-3xl p-8 mb-12 border border-white/10">
               <div className="flex items-center space-x-6">
                 <div className="w-24 h-24 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-4xl font-black">

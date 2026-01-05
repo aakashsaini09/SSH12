@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import img from '../dune.jpg'
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
+import CreateEvent from  '../../components/createEvent.tsx'
 interface Event {
   _id: string;
   movieTitle: string;
@@ -30,7 +31,7 @@ export default function MainPage() {
   const [selectedCity] = useState('Mumbai');
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [createEventPopup, setcreateEventPopup] = useState(false)
   const getAllEvents = async () => {
     const token = localStorage.getItem('token');
     if(!token){
@@ -133,7 +134,7 @@ const requestToJoinEvent = async (eId: string): Promise<void> => {
     const matchesStatus = filterStatus === 'ALL' || event.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
-
+  console.log(createEventPopup)
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -154,10 +155,11 @@ const requestToJoinEvent = async (eId: string): Promise<void> => {
                 <ChevronDown className="w-4 h-4" />
               </button>
               
-              <button className="flex items-center cursor-pointer space-x-2 px-6 py-2.5 bg-linear-to-r from-purple-500 via-purple-500 to-gray-500 rounded-full font-semibold hover:opacity-90 transition-opacity">
+              <button onClick={()=> setcreateEventPopup(true)} className="flex items-center cursor-pointer space-x-2 px-6 py-2.5 bg-linear-to-r from-purple-500 via-purple-500 to-gray-500 rounded-full font-semibold hover:opacity-90 transition-opacity">
                 <Plus className="w-5 h-5" />
                 <span >Create Event</span>
               </button>
+              {createEventPopup ? (<CreateEvent onClose={() => setcreateEventPopup(false)}/>) : (<></>)}
               <button onClick={changePopupfunction} className="flex items-center border border-white w-16 h-16 mx-3 cursor-pointer rounded-full font-semibold hover:opacity-90 transition-opacity">
                 {popupState ? (<div className='fixed bg-gray-800 top-22 right-10 flex flex-col text-xl rounded-2xl'>
                   <Link to={'/profile'} className='py-2 px-4 flex items-center justify-center border-b border-gray-400 w-full'>Profile</Link>
