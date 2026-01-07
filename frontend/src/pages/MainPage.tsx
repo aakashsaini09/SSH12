@@ -134,11 +134,10 @@ const requestToJoinEvent = async (eId: string): Promise<void> => {
     const matchesStatus = filterStatus === 'ALL' || event.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
-  console.log(createEventPopup)
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10">
+      <header className="bg-background/50 sticky font-second top-0 py-2 md:py-3 px-2 md:px-10 z-50 bg-black bg-opacity-70 backdrop-blur-[5px]">
         <div className="w-full px-6 lg:px-12 xl:px-20 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">

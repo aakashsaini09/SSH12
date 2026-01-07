@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Film, Users, MapPin, Calendar, X, Clock } from "lucide-react";
+import axios, { type AxiosResponse } from "axios";
+import { useNavigate } from "react-router-dom";
 
 interface CreateEventProps {
   onClose: () => void;
@@ -8,9 +10,10 @@ interface CreateEventProps {
 const CreateEvent = ({ onClose }: CreateEventProps) => {
   const cities = ["Delhi", "Mumbai", "Bengaluru", "Kolkata", "Hyderabad", "Pune", "Jaipur", "Lucknow"];
   const maxPeopleOptions = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-  
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const navigate = useNavigate()
   const [eventInformation, setEventInformation] = useState({
-    movieName: "",
+    movieTitle: "",
     theaterName: "",
     city: "",
     showTime: "",
@@ -19,7 +22,7 @@ const CreateEvent = ({ onClose }: CreateEventProps) => {
   });
 
   const [errors, setErrors] = useState({
-    movieName: "",
+    movieTitle: "",
     theaterName: "",
     city: "",
     showTime: "",
@@ -27,11 +30,15 @@ const CreateEvent = ({ onClose }: CreateEventProps) => {
     maxPeople: ""
   });
 
-  const createEventFunction = (e: React.FormEvent) => {
+  const createEventFunction = async(e: React.FormEvent) => {
     e.preventDefault();
+    const token = localStorage.getItem('token');
+    if(!token){
+      navigate('/');
+    }
     let hasError = false;
     const newErrors = {
-      movieName: "",
+      movieTitle: "",
       theaterName: "",
       city: "",
       showTime: "",
@@ -39,8 +46,8 @@ const CreateEvent = ({ onClose }: CreateEventProps) => {
       maxPeople: ""
     };
 
-    if (!eventInformation.movieName.trim()) {
-      newErrors.movieName = "Movie name is requigreen";
+    if (!eventInformation.movieTitle.trim()) {
+      newErrors.movieTitle = "Movie name is requigreen";
       hasError = true;
     }
     if (!eventInformation.theaterName.trim()) {
@@ -68,11 +75,38 @@ const CreateEvent = ({ onClose }: CreateEventProps) => {
 
     if (!hasError) {
       console.log("Event Information:", eventInformation);
-      // TODO: API call to create event
-      alert("Event created successfully!");
+      try {
+      // setLoading(true);
+      const res: AxiosResponse = await axios.post(`${backendUrl}/events`,{eventInformation}, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+      const data = res.data;
+      console.log("response is: ", data);
+      alert(res.data.message)
+      // alert("Event created successfully!");
+    } catch (error) {
+      console.error("Error: ", error);
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.message);
+      }
+    } finally {
       onClose();
+  
+      setEventInformation({
+        movieTitle: "",
+        theaterName: "",
+        city: "",
+        showTime: "",
+        showDate: "",
+        maxPeople: ""
+      })
+      // setLoading(false);
     }
-  };
+  }
+};
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -116,20 +150,20 @@ const CreateEvent = ({ onClose }: CreateEventProps) => {
         <div className="px-8 py-6 space-y-5 max-h-[calc(90vh-200px)] overflow-y-auto">
           {/* Movie Name */}
           <div className="space-y-2">
-            <label htmlFor="movieName" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+            <label htmlFor="movieTitle" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
               <Film className="w-4 h-4 text-blue-400" />
               <span>Movie Name</span>
             </label>
             <input
               type="text"
-              id="movieName"
-              name="movieName"
+              id="movieTitle"
+              name="movieTitle"
               placeholder="e.g., Dune Part Two"
               className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:bg-white/10 transition-all"
-              value={eventInformation.movieName}
+              value={eventInformation.movieTitle}
               onChange={handleChange}
             />
-            {errors.movieName && <p className="text-green-400 text-xs">{errors.movieName}</p>}
+            {errors.movieTitle && <p className="text-green-400 text-xs">{errors.movieTitle}</p>}
           </div>
 
           {/* Theater Name */}

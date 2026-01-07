@@ -1,26 +1,38 @@
 import MovieEvent from "../schema/MovieEvent.js";
 
 export const createEvent = async (req, res) => {
-  const { movieTitle, theaterName, showTime, city, maxPeople } = req.body;
-
-  if (!movieTitle || !theaterName || !showTime || !city) {
+  const { movieTitle, theaterName, showTime, showDate, city, maxPeople } = req.body.eventInformation;
+  console.log("req.body: ", req.body)
+  if (!movieTitle || !theaterName || !showTime || !city || !showDate) {
     return res.status(400).json({
       message: "Missing required fields"
     });
   }
+  const combined = `${showDate}T${showTime}:00`;
 
+  // Convert to Date
+  const showDateTime = new Date(combined);
   // Show time must be in future
-  if (new Date(showTime) <= new Date()) {
-    return res.status(400).json({
-      message: "Show time must be in the future"
-    });
-  }
+  console.log("finalDate: ", showDateTime)
+  // Validate date
+if (isNaN(showDateTime.getTime())) {
+  return res.status(400).json({
+    message: "Invalid date or time format"
+  });
+}
 
+// Must be in the future
+if (showDateTime <= new Date()) {
+  return res.status(400).json({
+    message: "Show time must be in the future"
+  });
+}
+// showTime = showDateTime
   try {
     const event = await MovieEvent.create({
       movieTitle,
       theaterName,
-      showTime,
+      showTime: showDateTime,
       city,
       maxPeople: maxPeople || 2,
       createdBy: req.user.userId,
