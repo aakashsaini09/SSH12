@@ -35,7 +35,6 @@ interface MyEvent {
 }
 
 interface UserProfile {
-  _id: string;
   name: string;
   city: string;
   email: string;
@@ -50,15 +49,13 @@ export default function ProfilePage() {
   const [eventMembers, setEventMembers] = useState<{ [eventId: string]: Array<{ _id: string; userId: {name: string; city: string} }> }>({});
   const [loading, setLoading] = useState(true);
 
-  // Hardcoded user data - Replace with actual user data from auth context
-  const user: UserProfile = {
-    _id: '694ebbf681e0ddf71d0bc895',
-    name: 'Aakash',
-    city: 'Mumbai',
-    email: 'aakash@example.com'
-  };
+  const [user, setUser] = useState<UserProfile>({
+    name: '',
+    city: '',
+    email: ''
+  })
+  const token = localStorage.getItem('token');
   const getMyEvents = async () => {
-    const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${backendUrl}/events/mine`, {
         headers: {
@@ -85,11 +82,36 @@ export default function ProfilePage() {
         data.events.forEach((event: MyEvent) => {
           fetchEventMembers(event._id);
         });
+
       } else if (typeof data === 'object') {
         setMyEvents([data]);
         fetchEventMembers(data._id);
       }
     } catch (error) {
+      console.error("Error fetching events: ", error);
+      setMyEvents([]);
+    }
+  };
+  const getUserProfile = async () => {
+    try {
+      const res = await fetch(`${backendUrl}/events/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
+
+      const data = await res.json();
+      console.log("My user profile response: ", data);
+      setUser({
+        name: data.name,
+        city: data.city,
+        email: data.email
+      })
+     } catch (error) {
       console.error("Error fetching events: ", error);
       setMyEvents([]);
     }
@@ -156,6 +178,7 @@ export default function ProfilePage() {
       setLoading(false);
     };
     fetchData();
+    getUserProfile();
   }, []);
 
   const handleAcceptRequest = async (eventId: string, requestId: string) => {

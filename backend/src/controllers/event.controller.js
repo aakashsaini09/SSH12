@@ -1,20 +1,16 @@
 import MovieEvent from "../schema/MovieEvent.js";
-
+import User from "../schema/UserSchema.js";
 export const createEvent = async (req, res) => {
   const { movieTitle, theaterName, showTime, showDate, city, maxPeople } = req.body.eventInformation;
-  console.log("req.body: ", req.body)
+  // console.log("req.body: ", req.body)
   if (!movieTitle || !theaterName || !showTime || !city || !showDate) {
     return res.status(400).json({
       message: "Missing required fields"
     });
   }
   const combined = `${showDate}T${showTime}:00`;
-
-  // Convert to Date
   const showDateTime = new Date(combined);
-  // Show time must be in future
-  console.log("finalDate: ", showDateTime)
-  // Validate date
+  // console.log("finalDate: ", showDateTime)
 if (isNaN(showDateTime.getTime())) {
   return res.status(400).json({
     message: "Invalid date or time format"
@@ -82,10 +78,27 @@ export const getMyEvents = async (req, res) => {
   try {
     const events = await MovieEvent.find({
       createdBy: req.user.userId
-    }).sort({ showTime: 1 });
+    }).sort({ showTime: 1 })
 
     return res.json(events);
 
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Internal server error"
+    });
+  }
+};
+export const getMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId)
+    .select('name email city createdAt');
+    if(!user){
+      return res.status(404).json({
+        message: "User not found"
+      })
+    }
+    return res.json(user);
   } catch (err) {
     console.error(err);
     return res.status(500).json({
