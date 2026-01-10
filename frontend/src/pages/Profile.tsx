@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Film, Users, MapPin, Calendar, Clock, ChevronDown, ChevronUp, X, Check, UserPlus, Trash2, Edit } from 'lucide-react';
+import { Film, Users, MapPin, Calendar, Clock, ChevronDown, ChevronUp, X, Check, UserPlus, Trash2, Edit, MessageCircleMore } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import ChatRoom from './ChatRoom';
 interface JoinRequest {
   _id: string;
   eventId: {
@@ -20,7 +20,7 @@ interface JoinRequest {
   updatedAt: string;
 }
 
-interface MyEvent {
+export interface MyEvent {
   _id: string;
   movieTitle: string;
   theaterName: string;
@@ -410,6 +410,14 @@ export default function ProfilePage() {
                             <div className="flex items-center space-x-2">
                               {event.status !== 'EXPIRED' && (
                                 <>
+                                  {
+                                    event.currentPeople > 1 && (
+                                      <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                                        <ChatRoom event={event} />
+                                        <MessageCircleMore className="w-5 h-5 cursor-pointer" />
+                                      </button>
+                                    )
+                                  }
                                   <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                                     <Edit className="w-5 h-5 cursor-pointer" />
                                   </button>
