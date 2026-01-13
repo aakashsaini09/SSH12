@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Film, Users, MapPin, Calendar, Clock, ChevronDown, ChevronUp, X, Check, UserPlus, Trash2, Edit, MessageCircleMore } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import ChatRoom from './ChatRoom';
+import { Link, useNavigate } from 'react-router-dom';
+// import ChatRoom from './ChatRoom';
 interface JoinRequest {
   _id: string;
   eventId: {
@@ -42,6 +42,7 @@ interface UserProfile {
 
 export default function ProfilePage() {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const Navigate = useNavigate();
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'requests' | 'members'>('requests');
   const [myEvents, setMyEvents] = useState<MyEvent[]>([]);
@@ -264,6 +265,10 @@ export default function ProfilePage() {
     }
   };
 
+  const openChatRoom = (event: MyEvent) => {
+    console.log("Opening chat room for event: ", event);
+    Navigate('/chatroom', {state: {event}});
+  }
   // Get join requests for a specific event
   const getEventJoinRequests = (eventId: string): JoinRequest[] => {
     return allRequests.filter(request => 
@@ -412,8 +417,7 @@ export default function ProfilePage() {
                                 <>
                                   {
                                     event.currentPeople > 1 && (
-                                      <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                                        <ChatRoom event={event} />
+                                      <button onClick={() => openChatRoom(event)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                                         <MessageCircleMore className="w-5 h-5 cursor-pointer" />
                                       </button>
                                     )

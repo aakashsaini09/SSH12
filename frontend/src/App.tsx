@@ -5,6 +5,8 @@ import SignUp from './pages/Signup'
 import Login from './pages/Login'
 import MainPage from './pages/MainPage'
 import Profile from './pages/Profile'
+import ChatRoom from './pages/ChatRoom'
+// import { MyEvent } from './pages/Profile';
 function App() {
   return (
     <BrowserRouter>
@@ -15,6 +17,7 @@ function App() {
           <Route path='/login' element={<Login/>}/>
           <Route path='/mainpage' element={<MainPage/>}/>
           <Route path='/profile' element={<Profile/>}/>
+          <Route path='/chatroom' element={<ChatRoom />}/>
 
         </Routes>
       </p>
